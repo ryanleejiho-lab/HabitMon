@@ -1,6 +1,7 @@
 import XCTest
 @testable import HabitMonCore
 
+@MainActor
 final class HabitMonStateStoreTests: XCTestCase {
     private var tempFileURL: URL!
 
@@ -44,5 +45,30 @@ final class HabitMonStateStoreTests: XCTestCase {
         try "not valid json".data(using: .utf8)!.write(to: tempFileURL)
         let store = HabitMonStateStore(fileURL: tempFileURL)
         XCTAssertEqual(store.load(), .empty)
+    }
+
+    func testLoadBacksUpCorruptedFileInsteadOfLeavingItToBeClobbered() throws {
+        let directory = tempFileURL.deletingLastPathComponent()
+        try FileManager.default.createDirectory(at: directory, withIntermediateDirectories: true)
+        try "not valid json".data(using: .utf8)!.write(to: tempFileURL)
+        let store = HabitMonStateStore(fileURL: tempFileURL)
+
+        _ = store.load()
+
+        // The corrupted content must no longer sit at the original path...
+        if FileManager.default.fileExists(atPath: tempFileURL.path) {
+            let remaining = try String(contentsOf: tempFileURL, encoding: .utf8)
+            XCTAssertNotEqual(remaining, "not valid json", "corrupted content should have been moved aside, not left in place")
+        }
+
+        // ...and a backup file matching the `.corrupted-<timestamp>` pattern must exist alongside it.
+        let siblingNames = try FileManager.default.contentsOfDirectory(atPath: directory.path)
+        let backupName = siblingNames.first { $0.hasPrefix("\(tempFileURL.lastPathComponent).corrupted-") }
+        XCTAssertNotNil(backupName, "expected a backup file matching '\(tempFileURL.lastPathComponent).corrupted-<timestamp>' in \(directory.path), found: \(siblingNames)")
+
+        if let backupName {
+            let backupContent = try String(contentsOf: directory.appendingPathComponent(backupName), encoding: .utf8)
+            XCTAssertEqual(backupContent, "not valid json")
+        }
     }
 }
