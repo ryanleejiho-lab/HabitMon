@@ -28,7 +28,7 @@ extension ChecklistSourceItem: Decodable {
         let container = try decoder.container(keyedBy: CodingKeys.self)
         id = try container.decode(UUID.self, forKey: .id)
         isDone = try container.decode(Bool.self, forKey: .isDone)
-        type = (try? container.decodeIfPresent(HabitType.self, forKey: .type)) ?? nil
+        type = try? container.decodeIfPresent(HabitType.self, forKey: .type)
     }
 }
 
