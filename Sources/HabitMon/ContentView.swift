@@ -1,20 +1,29 @@
 import SwiftUI
+import SpriteKit
 import HabitMonCore
 
 struct ContentView: View {
     @StateObject private var poller = ChecklistPoller()
+    private let scene: RoomScene = {
+        let scene = RoomScene()
+        scene.size = CGSize(width: 480, height: 360)
+        scene.scaleMode = .resizeFill
+        return scene
+    }()
 
     var body: some View {
-        VStack(alignment: .leading, spacing: 8) {
-            Text("HabitMon").font(.largeTitle)
-            ForEach(HabitType.allCases) { type in
-                Text("\(type.displayName): \(poller.state.xp(for: type)) XP")
+        SpriteView(scene: scene)
+            .frame(width: 480, height: 360)
+            .onAppear {
+                poller.start()
+                scene.updateOverlays(state: poller.state)
             }
-        }
-        .padding()
-        .frame(width: 480, height: 360)
-        .onAppear { poller.start() }
-        .onDisappear { poller.stop() }
+            .onDisappear {
+                poller.stop()
+            }
+            .onChange(of: poller.state) { newState in
+                scene.updateOverlays(state: newState)
+            }
     }
 }
 
