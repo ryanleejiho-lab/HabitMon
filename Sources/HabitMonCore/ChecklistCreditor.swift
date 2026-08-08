@@ -10,6 +10,11 @@ import Foundation
 ///   deletes a checked-off item, that ID can never reappear in the source file, so nothing
 ///   is lost by dropping it, and this keeps HabitMon's state file from growing forever.
 ///
+/// Callers must never invoke `apply` with a `sourceItems` snapshot that failed to load or
+/// parse completely — an ID's mere absence is read as "permanently deleted" and will cause
+/// re-crediting if that item reappears later. (Task 8's `ChecklistPoller` respects this by
+/// skipping the call entirely on a failed read, rather than substituting an empty array.)
+///
 /// This is a pure function — no I/O. The caller (HabitMon's polling layer) is responsible
 /// for persisting the result.
 public enum ChecklistCreditor {

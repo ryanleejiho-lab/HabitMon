@@ -81,4 +81,25 @@ final class ChecklistCreditorTests: XCTestCase {
         let twice = ChecklistCreditor.apply(sourceItems: items, to: once)
         XCTAssertEqual(once, twice)
     }
+
+    func testCustomXPPerTaskIsRespected() {
+        let items = [ChecklistSourceItem(id: UUID(), isDone: true, type: .fire)]
+        let result = ChecklistCreditor.apply(sourceItems: items, to: .empty, xpPerTask: 25)
+        XCTAssertEqual(result.xp(for: .fire), 25)
+    }
+
+    func testAlreadyCreditedGuardIgnoresTypeChanges() {
+        // If a future refactor ever compared on (id, type) instead of id alone, this is the
+        // test that would catch a partial re-credit into the new stat.
+        let id = UUID()
+        var state = HabitMonState.empty
+        state.addXP(10, to: .fire)
+        state.creditedTaskIDs.insert(id)
+        // Same ID reappears done again, but now tagged wisdom instead of fire.
+        let items = [ChecklistSourceItem(id: id, isDone: true, type: .wisdom)]
+
+        let result = ChecklistCreditor.apply(sourceItems: items, to: state)
+        XCTAssertEqual(result.xp(for: .fire), 10, "Original credit untouched")
+        XCTAssertEqual(result.xp(for: .wisdom), 0, "Must not re-credit into the new type — guard is ID-based, not (id, type)-based")
+    }
 }
