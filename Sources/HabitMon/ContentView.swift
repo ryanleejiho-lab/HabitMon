@@ -12,18 +12,21 @@ struct ContentView: View {
     }()
 
     var body: some View {
-        SpriteView(scene: scene)
-            .frame(width: 480, height: 360)
-            .onAppear {
-                poller.start()
-                scene.updateOverlays(state: poller.state)
-            }
-            .onDisappear {
-                poller.stop()
-            }
-            .onChange(of: poller.state) { newState in
-                scene.updateOverlays(state: newState)
-            }
+        VStack(spacing: 0) {
+            SpriteView(scene: scene)
+                .frame(width: 480, height: 360)
+            StatHUDView(state: poller.state)
+        }
+        .onAppear {
+            poller.start()
+            scene.updateOverlays(state: poller.state)
+        }
+        .onDisappear {
+            poller.stop()
+        }
+        .onChange(of: poller.state) { newState in
+            scene.updateOverlays(state: newState)
+        }
     }
 }
 
