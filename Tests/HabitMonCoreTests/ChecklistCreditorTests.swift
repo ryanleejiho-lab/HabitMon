@@ -50,6 +50,9 @@ final class ChecklistCreditorTests: XCTestCase {
     }
 
     func testPrunesCreditedIDNoLongerPresentInSource() {
+        // Simulates boring.notch's own daily rollover deleting a checked-off item —
+        // once it's gone from the source entirely, its credited ID can never reappear,
+        // so it's safe (and correct) to drop from creditedTaskIDs.
         let goneID = UUID()
         var state = HabitMonState.empty
         state.addXP(10, to: .fire)
@@ -61,6 +64,8 @@ final class ChecklistCreditorTests: XCTestCase {
     }
 
     func testDoesNotPruneCreditedIDStillPresentEvenIfNowUnchecked() {
+        // Design spec: pruning is based on the ID's mere presence in the source file,
+        // regardless of isDone — only actual deletion (rollover) should prune it.
         let id = UUID()
         var state = HabitMonState.empty
         state.creditedTaskIDs.insert(id)
