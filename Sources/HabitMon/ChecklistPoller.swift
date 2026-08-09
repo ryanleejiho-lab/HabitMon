@@ -7,6 +7,11 @@ import HabitMonCore
 /// on the next tick rather than crashing.
 @MainActor
 final class ChecklistPoller: ObservableObject {
+    /// One poller for the whole app's lifetime — started once at launch (`HabitMonApp.init`)
+    /// and kept alive regardless of whether any window is open, so progress tracking
+    /// continues in the background (menu-bar-only) the same way boring.notch itself does.
+    static let shared = ChecklistPoller()
+
     @Published private(set) var state: HabitMonState
 
     private let store: HabitMonStateStore
@@ -24,6 +29,7 @@ final class ChecklistPoller: ObservableObject {
     }
 
     func start() {
+        guard timer == nil else { return } // idempotent — safe to call more than once
         pollOnce()
         timer = Timer.scheduledTimer(withTimeInterval: 3.0, repeats: true) { [weak self] _ in
             Task { @MainActor in self?.pollOnce() }

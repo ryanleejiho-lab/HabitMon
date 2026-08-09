@@ -45,6 +45,8 @@ cat > "$APP_BUNDLE/Contents/Info.plist" <<PLIST
     <true/>
     <key>LSApplicationCategoryType</key>
     <string>public.app-category.games</string>
+    <key>LSUIElement</key>
+    <true/>
 </dict>
 </plist>
 PLIST
@@ -58,5 +60,12 @@ if [ "${1:-}" = "install" ]; then
     echo "Installing to /Applications/$APP_NAME.app..."
     rm -rf "/Applications/$APP_NAME.app"
     cp -R "$APP_BUNDLE" "/Applications/$APP_NAME.app"
+
+    # Force LaunchServices to pick up Info.plist changes (e.g. LSUIElement) immediately —
+    # without this, macOS can keep serving a stale cached registration for the same bundle
+    # ID/path and the app launches with its OLD activation policy (e.g. still shows a Dock
+    # icon) until something else happens to trigger a re-scan.
+    /System/Library/Frameworks/CoreServices.framework/Versions/A/Frameworks/LaunchServices.framework/Versions/A/Support/lsregister -f "/Applications/$APP_NAME.app"
+
     echo "Installed: /Applications/$APP_NAME.app"
 fi
