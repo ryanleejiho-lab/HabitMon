@@ -12,13 +12,25 @@ A pixel-art companion creature that grows as you complete tasks in [boring.notch
 
 ## Install & run
 
+**Option A — as a real double-clickable app (recommended):**
+
 ```bash
 git clone https://github.com/ryanleejiho-lab/HabitMon.git
 cd HabitMon
+Scripts/build-app.sh install
+```
+
+This builds a release binary, packages it as `HabitMon.app`, ad-hoc code-signs it (so Gatekeeper allows it to launch without a paid Apple Developer account), and installs it to `/Applications/HabitMon.app`. After that, just open it like any other app — Spotlight, Launchpad, or double-click in Finder. Re-run `Scripts/build-app.sh install` any time you pull new changes to rebuild.
+
+(Drop the `install` argument to just build `.build/app/HabitMon.app` locally without copying it to `/Applications`.)
+
+**Option B — quick dev run from Terminal:**
+
+```bash
 swift run HabitMon
 ```
 
-A window opens with your creature in a small room. Use the arrow keys to walk around. Add and tag tasks in boring.notch's Checklist tab (flame/book/leaf/droplet/bolt icons); checking one off feeds 10 XP to that stat within a few seconds, visible both in the HUD below the room and as a visual change on the creature once a stat crosses a stage threshold (50 XP, then 150 XP).
+Either way: a window opens with your creature in a small room. Use the arrow keys to walk around. Add and tag tasks in boring.notch's Checklist tab (flame/book/leaf/droplet/bolt icons); checking one off feeds 10 XP to that stat within a few seconds, visible both in the HUD below the room and as a visual change on the creature once a stat crosses a stage threshold (50 XP, then 150 XP).
 
 ## How it works
 
